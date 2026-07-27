@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RKN Warehouse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
+  --bg:#F0F2F5;--white:#fff;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --primary:#1e3a5f;--primary-mid:#2563eb;--primary-light:#3b82f6;
+  --fresh:#059669;--fresh-bg:#ecfdf5;
+  --warn:#d97706;--warn-bg:#fffbeb;
+  --crit:#dc2626;--crit-bg:#fef2f2;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 20px 40px rgba(0,0,0,0.1);
+  --r:14px;--r-sm:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* LOGIN */
+.login-page{position:fixed;inset:0;background:linear-gradient(135deg,#0f1f3d 0%,#1e3a5f 50%,#1d4ed8 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem}
+.login-card{background:#fff;border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 40px 80px rgba(0,0,0,0.3)}
+.login-logo{font-family:'Outfit',sans-serif;font-size:32px;font-weight:900;color:var(--primary);letter-spacing:-1px;margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:2rem}
+.lf{margin-bottom:14px}
+.lf label{display:block;font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px}
+.lf input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:#f8fafc;transition:all 0.2s}
+.lf input:focus{outline:none;border-color:var(--primary-light);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--primary),var(--primary-mid));color:#fff;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:all 0.2s;box-shadow:0 4px 16px rgba(30,58,95,0.35)}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(30,58,95,0.4)}
+.login-err{color:var(--crit);font-size:12px;margin-top:10px;min-height:18px;text-align:center;font-weight:500}
+
+/* APP */
+.app{display:none}.app.show{display:flex;flex-direction:column;min-height:100vh}
+
+/* NAVBAR */
+.navbar{background:linear-gradient(90deg,#0f1f3d,#1e3a5f,#1d4ed8);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(15,31,61,0.5)}
+.nav-brand{font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.nav-brand span{font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;align-self:flex-end;margin-bottom:3px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.user-chip{font-size:12px;color:rgba(255,255,255,0.9);font-weight:600;background:rgba(255,255,255,0.12);padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.15)}
+.btn-logout{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all 0.15s}
+.btn-logout:hover{background:rgba(255,255,255,0.15);color:#fff}
+
+/* DASHBOARD */
+.dashboard{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;flex-direction:column;gap:1.5rem}
+.dash-greeting{text-align:center}
+.dash-greeting h2{font-family:'Outfit',sans-serif;font-size:24px;font-weight:800;color:var(--primary);letter-spacing:-0.5px}
+.dash-greeting p{font-size:13px;color:var(--ink2);margin-top:4px}
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:560px}
+.dash-card{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.dash-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(30,58,95,0.04),transparent);opacity:0;transition:opacity 0.2s}
+.dash-card:hover{border-color:var(--primary-light);transform:translateY(-5px) scale(1.02);box-shadow:0 20px 40px rgba(30,58,95,0.12)}
+.dash-card:hover::after{opacity:1}
+.dc-icon-wrap{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#f0f4ff,#e0e7ff);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+.dash-card:hover .dc-icon-wrap{background:linear-gradient(135deg,var(--primary),var(--primary-mid));transform:scale(1.1)}
+.dc-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.dc-sub{font-size:11px;color:var(--ink3);line-height:1.4}
+
+/* PAGE */
+.page{display:none;flex:1;flex-direction:column}.page.show{display:flex}
+
+/* TOP BAR */
+.top-bar{background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 1.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:60px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.back-btn{background:none;border:none;color:var(--ink2);font-size:13px;font-weight:500;cursor:pointer;padding:5px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;transition:all 0.15s}
+.back-btn:hover{background:#f1f5f9;color:var(--ink)}
+.top-bar-title{font-size:15px;font-weight:700;color:var(--ink);flex:1;letter-spacing:-0.3px}
+.page-content{padding:1.5rem;max-width:1100px;margin:0 auto;width:100%;flex:1}
+
+/* BUTTONS */
+.btn{border:none;border-radius:9px;font-weight:600;cursor:pointer;padding:9px 18px;font-size:13px;font-family:'DM Sans',sans-serif;transition:all 0.18s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-mid));color:#fff;box-shadow:0 2px 8px rgba(30,58,95,0.25)}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(30,58,95,0.35)}
+.btn-green{background:var(--fresh);color:#fff}.btn-green:hover{background:#047857;transform:translateY(-1px)}
+.btn-red{background:var(--crit);color:#fff}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink2)}.btn-ghost:hover{border-color:var(--primary-light);color:var(--primary);background:#eff6ff}
+.btn-sm{padding:5px 12px;font-size:11px;border-radius:7px}
+
+/* CARDS */
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.2rem;box-shadow:var(--shadow-sm);margin-bottom:1rem}
+.card h3{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:1rem}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field label{font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:0.07em}
+.form-field input,.form-field select{border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:#f8fafc;transition:all 0.15s}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:var(--primary-light);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:12px;box-shadow:var(--shadow);border:1.5px solid var(--border)}
+.tbl{border-collapse:collapse;width:100%;background:var(--white);font-size:12px;min-width:500px}
+.tbl thead tr{background:linear-gradient(90deg,#0f1f3d,#1e3a5f)}
+.tbl th{padding:10px 12px;text-align:left;color:rgba(255,255,255,0.9);font-size:11px;font-weight:600;letter-spacing:0.04em;white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid #f1f5f9;color:var(--ink2)}
+.tbl td:first-child{color:var(--ink);font-weight:500}
+.tbl tbody tr:hover td{background:#f8fafc}
+.tbl tfoot td{background:#f8fafc;font-weight:700;color:var(--primary)}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-in{background:var(--fresh-bg);color:#065f46}
+.badge-out{background:var(--crit-bg);color:#991b1b}
+.badge-fresh{background:var(--fresh-bg);color:#065f46}
+.badge-warn{background:var(--warn-bg);color:#92400e}
+.badge-crit{background:var(--crit-bg);color:#991b1b}
+
+/* SEARCH */
+.search-wrap{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.search-inp{flex:1;min-width:180px;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:#fff;transition:all 0.15s}
+.search-inp:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+
+/* RECEIPT UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:16px;padding:2.5rem;text-align:center;cursor:pointer;transition:all 0.2s;background:#f8fafc}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary-light);background:#eff6ff}
+.upload-zone .up-icon{font-size:40px;margin-bottom:12px}
+.upload-zone h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.upload-zone p{font-size:12px;color:var(--ink3)}
+.parsed-preview{background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin-top:1rem}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:1.2rem}
+.stat-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow-sm)}
+.stat-num{font-size:26px;font-weight:800;color:var(--primary);font-family:'Outfit',sans-serif;line-height:1}
+.stat-lbl{font-size:10px;color:var(--ink3);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,#0f1f3d,#1e3a5f);color:rgba(255,255,255,0.95);padding:10px 22px;border-radius:99px;font-size:12px;font-weight:600;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(15,31,61,0.35)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal{background:var(--white);border-radius:18px;padding:1.75rem;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:1.2rem}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem;flex-wrap:wrap}
+
+/* NO DATA */
+.no-data{text-align:center;padding:3rem;color:var(--ink3)}
+.no-data .ico{font-size:40px;display:block;margin-bottom:12px}
+
+/* AGING BAR */
+.aging-bar{height:6px;border-radius:99px;background:var(--border);overflow:hidden;margin-top:4px}
+.aging-fill{height:100%;border-radius:99px;transition:width 0.3s}
+
+/* EXCEL IMPORT */
+.import-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.itab{padding:7px 16px;font-size:12px;border-radius:99px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;color:var(--ink2);transition:all 0.15s}
+.itab:hover{border-color:var(--primary-light);color:var(--primary)}
+.itab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+@media(max-width:480px){
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .page-content{padding:1rem}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-page" id="login-page">
+  <div class="login-card">
+    <div class="login-logo">📦 RKN WMS</div>
+    <div class="login-sub">Warehouse Management System</div>
+    <div class="lf"><label>User ID</label><input type="text" id="login-id" placeholder="Enter your ID" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="lf"><label>Password</label><input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button type="button" class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand" onclick="goHome()">📦 RKN <span>Warehouse</span></div>
+    <div class="nav-right">
+      <div class="user-chip" id="user-chip">—</div>
+      <button type="button" class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <div class="dash-greeting">
+      <h2 id="dash-greet">Good morning 👋</h2>
+      <p id="dash-date">—</p>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card" onclick="showPage('stock')">
+        <div class="dc-icon-wrap">📦</div>
+        <div class="dc-title">Stock</div>
+        <div class="dc-sub">Current inventory</div>
+      </div>
+      <div class="dash-card" onclick="showPage('movement')">
+        <div class="dc-icon-wrap">🔄</div>
+        <div class="dc-title">Movement</div>
+        <div class="dc-sub">IN / OUT history</div>
+      </div>
+      <div class="dash-card" onclick="showPage('receipt')">
+        <div class="dc-icon-wrap">📄</div>
+        <div class="dc-title">Receipt</div>
+        <div class="dc-sub">Upload & auto-entry</div>
+      </div>
+      <div class="dash-card" onclick="showPage('aging')">
+        <div class="dc-icon-wrap">⏳</div>
+        <div class="dc-title">Aging Stock</div>
+        <div class="dc-sub">Days in warehouse</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOCK PAGE -->
+  <div class="page" id="page-stock">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goHome()">‹ Back</button>
+      <span class="top-bar-title">📦 Stock</span>
+      <button type="button" class="btn btn-primary btn-sm" onclick="showAddProductModal()">+ Add Product</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="showImportModal()">⬆️ Import Excel</button>
+    </div>
+    <div class="page-content">
+      <div class="stats-row" id="stock-stats"></div>
+      <div class="search-wrap">
+        <input type="text" class="search-inp" id="stock-search" placeholder="Search by code or name..." oninput="renderStockTable()"/>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>Code</th><th>Product Name</th><th>Arabic Name</th><th>Qty</th><th>Unit</th><th>Last Movement</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="stock-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOVEMENT PAGE -->
+  <div class="page" id="page-movement">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goHome()">‹ Back</button>
+      <span class="top-bar-title">🔄 Stock Movement</span>
+    </div>
+    <div class="page-content">
+      <div class="search-wrap">
+        <input type="text" class="search-inp" id="mov-search" placeholder="Search by product code, name or transaction no..."/>
+        <button type="button" class="btn btn-primary" onclick="renderMovements()">Search</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('mov-search').value='';renderMovements()">Clear</button>
+      </div>
+      <div id="mov-content"></div>
+    </div>
+  </div>
+
+  <!-- RECEIPT PAGE -->
+  <div class="page" id="page-receipt">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goHome()">‹ Back</button>
+      <span class="top-bar-title">📄 Receipt Upload</span>
+    </div>
+    <div class="page-content">
+      <div class="card">
+        <h3>📤 Upload Odoo Receipt PDF</h3>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('pdf-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <div class="up-icon">📄</div>
+          <h4>Click or drag PDF here</h4>
+          <p>Odoo picking operations receipt</p>
+        </div>
+        <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePdfUpload(this)"/>
+      </div>
+      <div id="receipt-result"></div>
+    </div>
+  </div>
+
+  <!-- AGING PAGE -->
+  <div class="page" id="page-aging">
+    <div class="top-bar">
+      <button type="button" class="back-btn" onclick="goHome()">‹ Back</button>
+      <span class="top-bar-title">⏳ Aging Stock</span>
+    </div>
+    <div class="page-content">
+      <div class="card" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:1rem 1.2rem">
+        <div style="display:flex;align-items:center;gap:6px"><span class="badge badge-fresh">🟢 Fresh</span><span style="font-size:11px;color:var(--ink2)">0–4 days</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span class="badge badge-warn">🟡 Warning</span><span style="font-size:11px;color:var(--ink2)">5–7 days</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span class="badge badge-crit">🔴 Critical</span><span style="font-size:11px;color:var(--ink2)">8+ days</span></div>
+      </div>
+      <div class="stats-row" id="aging-stats"></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>Code</th><th>Product Name</th><th>Qty</th><th>First IN Date</th><th>Days in Stock</th><th>Status</th>
+          </tr></thead>
+          <tbody id="aging-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-add-product" style="display:none">
+  <div class="modal">
+    <h3>➕ Add Product</h3>
+    <div class="form-row">
+      <div class="form-field"><label>Product Code</label><input type="text" id="ap-code" placeholder="e.g. 10001"/></div>
+      <div class="form-field"><label>Product Name (EN)</label><input type="text" id="ap-name" placeholder="e.g. Rose Red"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Arabic Name</label><input type="text" id="ap-name-ar" placeholder="الاسم بالعربي" dir="rtl"/></div>
+      <div class="form-field"><label>Unit</label>
+        <select id="ap-unit">
+          <option>Piece</option><option>Bunch</option><option>Box</option><option>Stem</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Opening Stock Qty</label><input type="number" id="ap-qty" placeholder="0" min="0"/></div>
+    </div>
+    <div class="ma">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-product')">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-import" style="display:none">
+  <div class="modal">
+    <h3>⬆️ Import from Excel</h3>
+    <p style="font-size:12px;color:var(--ink2);margin-bottom:1rem">Excel file should have columns: <strong>Code, Name, Name_AR (optional), Qty, Unit (optional)</strong></p>
+    <div class="upload-zone" onclick="document.getElementById('excel-input').click()" style="padding:1.5rem">
+      <div class="up-icon" style="font-size:28px">📊</div>
+      <h4 style="font-size:13px">Click to select Excel file</h4>
+      <p>.xlsx or .xls</p>
+    </div>
+    <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelImport(this)"/>
+    <div id="excel-preview"></div>
+    <div class="ma">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-import')">Cancel</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-import" style="display:none" onclick="confirmExcelImport()">Import All</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-edit-product" style="display:none">
+  <div class="modal">
+    <h3>✏️ Edit Product</h3>
+    <input type="hidden" id="ep-id"/>
+    <div class="form-row">
+      <div class="form-field"><label>Product Code</label><input type="text" id="ep-code"/></div>
+      <div class="form-field"><label>Product Name (EN)</label><input type="text" id="ep-name"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Arabic Name</label><input type="text" id="ep-name-ar" dir="rtl"/></div>
+      <div class="form-field"><label>Unit</label>
+        <select id="ep-unit">
+          <option>Piece</option><option>Bunch</option><option>Box</option><option>Stem</option>
+        </select>
+      </div>
+    </div>
+    <div class="ma">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-product')">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="updateProduct()">Update</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SB_URL='https://giqrfouyfeuotrelzvrg.supabase.co/rest/v1';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpcXJmb3V5ZmV1b3RyZWx6dnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxNTYzMTksImV4cCI6MjEwMDczMjMxOX0.tnfztwr82EFVsGs7pV-Wn4V_vasK-0WRCKa6cddEt60';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const WH_LOC='WBuraydah'; // warehouse location keyword
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let currentUser=null;
+let products=[];
+let movements=[];
+let pendingImport=[];
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function closeModal(id){document.getElementById(id).style.display='none';}
+function fmtDate(d){if(!d)return '—';const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtDateTime(d){if(!d)return '—';const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+function daysSince(d){if(!d)return null;const now=new Date();const then=new Date(d);return Math.floor((now-then)/(1000*60*60*24));}
+function agingBadge(days){
+  if(days===null)return '<span class="badge" style="background:#f1f5f9;color:#64748b">No data</span>';
+  if(days<=4)return '<span class="badge badge-fresh">🟢 Fresh ('+days+'d)</span>';
+  if(days<=7)return '<span class="badge badge-warn">🟡 Warning ('+days+'d)</span>';
+  return '<span class="badge badge-crit">🔴 Critical ('+days+'d)</span>';
+}
+function agingColor(days){if(days===null)return '#94a3b8';if(days<=4)return '#059669';if(days<=7)return '#d97706';return '#dc2626';}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const id=document.getElementById('login-id').value.trim();
+  const pw=document.getElementById('login-pw').value.trim();
+  if(!id||!pw){document.getElementById('login-err').textContent='Please enter ID and password.';return;}
+  try{
+    const res=await fetch(SB_URL+'/wh_users?id=eq.'+encodeURIComponent(id),{headers:SB_H});
+    const rows=await res.json();
+    if(!rows.length||rows[0].password!==pw){document.getElementById('login-err').textContent='Invalid ID or password.';return;}
+    currentUser=rows[0];
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app').classList.add('show');
+    document.getElementById('user-chip').textContent=currentUser.name;
+    initDashboard();
+    await loadData();
+  }catch(e){document.getElementById('login-err').textContent='Connection error. Try again.';}
+}
+
+function doLogout(){
+  currentUser=null;
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('login-id').value='';
+  document.getElementById('login-pw').value='';
+  document.getElementById('login-err').textContent='';
+  goHome();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function initDashboard(){
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('dash-greet').textContent=greet+', '+currentUser.name+' 👋';
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+async function loadData(){
+  try{
+    const [pRes,mRes]=await Promise.all([
+      fetch(SB_URL+'/wh_products?order=code.asc,name.asc',{headers:SB_H}),
+      fetch(SB_URL+'/wh_movements?order=date.desc&limit=1000',{headers:SB_H})
+    ]);
+    products=await pRes.json();
+    movements=await mRes.json();
+  }catch(e){toast('⚠️ Data load error');}
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function goHome(){
+  document.getElementById('dashboard').style.display='';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+}
+
+async function showPage(page){
+  document.getElementById('dashboard').style.display='none';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-'+page).classList.add('show');
+  if(page==='stock') renderStockPage();
+  if(page==='movement') renderMovements();
+  if(page==='aging') renderAgingPage();
+}
+
+// ── STOCK PAGE ───────────────────────────────────────────────────────────────
+function renderStockPage(){
+  renderStockStats();
+  renderStockTable();
+}
+
+function renderStockStats(){
+  const totalProducts=products.length;
+  const totalQty=products.reduce((a,p)=>a+(p.quantity||0),0);
+  const lowStock=products.filter(p=>(p.quantity||0)<10).length;
+  const zeroStock=products.filter(p=>(p.quantity||0)===0).length;
+  document.getElementById('stock-stats').innerHTML=
+    statCard(totalProducts,'Products')+
+    statCard(totalQty,'Total Qty')+
+    statCard(lowStock,'Low Stock')+
+    statCard(zeroStock,'Zero Stock');
+}
+
+function statCard(num,lbl){
+  return '<div class="stat-card"><div class="stat-num">'+num+'</div><div class="stat-lbl">'+lbl+'</div></div>';
+}
+
+function renderStockTable(){
+  const q=(document.getElementById('stock-search').value||'').toLowerCase();
+  const filtered=q?products.filter(p=>(p.code||'').toLowerCase().includes(q)||(p.name||'').toLowerCase().includes(q)||(p.name_ar||'').includes(q)):products;
+  const tbody=document.getElementById('stock-tbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--ink3)">No products found</td></tr>';return;}
+  tbody.innerHTML=filtered.map(p=>`
+    <tr>
+      <td><code style="background:#f1f5f9;padding:2px 7px;border-radius:5px;font-family:'DM Mono',monospace;font-size:11px">${p.code}</code></td>
+      <td style="font-weight:600">${p.name}</td>
+      <td style="direction:rtl;text-align:right;font-size:12px;color:var(--ink2)">${p.name_ar||'—'}</td>
+      <td><strong style="color:${(p.quantity||0)===0?'var(--crit)':(p.quantity||0)<10?'var(--warn)':'var(--ink)'}">${p.quantity||0}</strong></td>
+      <td style="color:var(--ink3);font-size:11px">${p.unit||'Piece'}</td>
+      <td style="font-size:11px;color:var(--ink3)">${fmtDate(p.last_movement_date)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="showEditProduct('${p.id}')">✏️</button>
+          <button type="button" class="btn btn-sm" style="background:var(--crit-bg);color:var(--crit);border:none" onclick="deleteProduct('${p.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function showAddProductModal(){
+  document.getElementById('ap-code').value='';
+  document.getElementById('ap-name').value='';
+  document.getElementById('ap-name-ar').value='';
+  document.getElementById('ap-qty').value='0';
+  document.getElementById('ap-unit').value='Piece';
+  document.getElementById('modal-add-product').style.display='flex';
+}
+
+async function saveProduct(){
+  const code=document.getElementById('ap-code').value.trim();
+  const name=document.getElementById('ap-name').value.trim();
+  const name_ar=document.getElementById('ap-name-ar').value.trim();
+  const qty=parseFloat(document.getElementById('ap-qty').value)||0;
+  const unit=document.getElementById('ap-unit').value;
+  if(!code||!name){toast('⚠️ Code and name required!');return;}
+  try{
+    const res=await fetch(SB_URL+'/wh_products',{
+      method:'POST',headers:{...SB_H,'Prefer':'return=representation'},
+      body:JSON.stringify({code,name,name_ar,quantity:qty,unit,first_in_date:qty>0?new Date().toISOString():null})
+    });
+    const rows=await res.json();
+    products.push(rows[0]);
+    products.sort((a,b)=>a.code.localeCompare(b.code)||a.name.localeCompare(b.name));
+    closeModal('modal-add-product');
+    renderStockPage();
+    toast('✅ Product added!');
+  }catch(e){toast('⚠️ Error saving product');}
+}
+
+function showEditProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('ep-id').value=id;
+  document.getElementById('ep-code').value=p.code;
+  document.getElementById('ep-name').value=p.name;
+  document.getElementById('ep-name-ar').value=p.name_ar||'';
+  document.getElementById('ep-unit').value=p.unit||'Piece';
+  document.getElementById('modal-edit-product').style.display='flex';
+}
+
+async function updateProduct(){
+  const id=document.getElementById('ep-id').value;
+  const code=document.getElementById('ep-code').value.trim();
+  const name=document.getElementById('ep-name').value.trim();
+  const name_ar=document.getElementById('ep-name-ar').value.trim();
+  const unit=document.getElementById('ep-unit').value;
+  if(!code||!name){toast('⚠️ Required!');return;}
+  try{
+    await fetch(SB_URL+'/wh_products?id=eq.'+id,{method:'PATCH',headers:SB_H,body:JSON.stringify({code,name,name_ar,unit})});
+    const p=products.find(x=>x.id===id);
+    if(p){p.code=code;p.name=name;p.name_ar=name_ar;p.unit=unit;}
+    closeModal('modal-edit-product');
+    renderStockPage();
+    toast('✅ Updated!');
+  }catch(e){toast('⚠️ Error');}
+}
+
+async function deleteProduct(id){
+  if(!confirm('Delete this product?'))return;
+  await fetch(SB_URL+'/wh_products?id=eq.'+id,{method:'DELETE',headers:SB_H});
+  products=products.filter(p=>p.id!==id);
+  renderStockPage();
+  toast('🗑️ Deleted');
+}
+
+// ── EXCEL IMPORT ─────────────────────────────────────────────────────────────
+function showImportModal(){
+  document.getElementById('excel-preview').innerHTML='';
+  document.getElementById('btn-confirm-import').style.display='none';
+  document.getElementById('excel-input').value='';
+  pendingImport=[];
+  document.getElementById('modal-import').style.display='flex';
+}
+
+function handleExcelImport(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const XLSX=window.XLSX;
+      if(!XLSX){toast('⚠️ Loading Excel library...');return;}
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+      const headers=rows[0]||[];
+      const dataRows=rows.slice(1).filter(r=>r.some(c=>c));
+      pendingImport=dataRows.map(r=>{
+        const obj={};
+        headers.forEach((h,i)=>{if(h)obj[String(h).toLowerCase().trim()]=r[i];});
+        return {
+          code:String(obj.code||obj['product code']||'').trim(),
+          name:String(obj.name||obj['product name']||'').trim(),
+          name_ar:String(obj.name_ar||obj['arabic name']||obj['الاسم']||'').trim(),
+          quantity:parseFloat(obj.qty||obj.quantity||obj['opening stock']||0)||0,
+          unit:String(obj.unit||'Piece').trim()
+        };
+      }).filter(r=>r.code&&r.name);
+
+      const preview=document.getElementById('excel-preview');
+      preview.innerHTML='<div style="margin-top:1rem;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Preview ('+pendingImport.length+' products)</div>'
+        +'<div style="max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px">'
+        +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
+        +'<thead><tr style="background:#f8fafc"><th style="padding:6px 10px;text-align:left">Code</th><th style="padding:6px 10px;text-align:left">Name</th><th style="padding:6px 10px;text-align:right">Qty</th></tr></thead>'
+        +'<tbody>'+pendingImport.map(p=>'<tr><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9"><code>'+p.code+'</code></td><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9">'+p.name+'</td><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9;text-align:right">'+p.quantity+'</td></tr>').join('')
+        +'</tbody></table></div>';
+      document.getElementById('btn-confirm-import').style.display='inline-flex';
+    }catch(ex){toast('⚠️ Error reading Excel: '+ex.message);}
+  };
+  reader.readAsBinaryString(file);
+}
+
+async function confirmExcelImport(){
+  if(!pendingImport.length)return;
+  toast('⏳ Importing...');
+  let count=0;
+  for(const p of pendingImport){
+    try{
+      const res=await fetch(SB_URL+'/wh_products',{
+        method:'POST',headers:{...SB_H,'Prefer':'resolution=ignore-duplicates,return=representation'},
+        body:JSON.stringify({code:p.code,name:p.name,name_ar:p.name_ar,quantity:p.quantity,unit:p.unit,first_in_date:p.quantity>0?new Date().toISOString():null})
+      });
+      const rows=await res.json();
+      if(rows&&rows.length) products.push(rows[0]);
+      count++;
+    }catch(e){}
+  }
+  products.sort((a,b)=>a.code.localeCompare(b.code)||a.name.localeCompare(b.name));
+  closeModal('modal-import');
+  renderStockPage();
+  toast('✅ Imported '+count+' products!');
+}
+
+// ── MOVEMENT PAGE ─────────────────────────────────────────────────────────────
+async function renderMovements(){
+  const q=(document.getElementById('mov-search').value||'').toLowerCase().trim();
+  let url=SB_URL+'/wh_movements?order=date.desc&limit=500';
+  const cont=document.getElementById('mov-content');
+  cont.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3)">⏳ Loading...</div>';
+  try{
+    const res=await fetch(url,{headers:SB_H});
+    let movs=await res.json();
+    if(q) movs=movs.filter(m=>
+      (m.product_code||'').toLowerCase().includes(q)||
+      (m.product_name||'').toLowerCase().includes(q)||
+      (m.transaction_no||'').toLowerCase().includes(q)
+    );
+    if(!movs.length){cont.innerHTML='<div class="no-data"><span class="ico">🔄</span><p>No movements found</p></div>';return;}
+    cont.innerHTML='<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+      +'<th>Date</th><th>Transaction No</th><th>Code</th><th>Product</th><th>Qty</th><th>Type</th><th>From</th><th>To</th>'
+      +'</tr></thead><tbody>'
+      +movs.map(m=>`
+        <tr>
+          <td style="white-space:nowrap;font-size:11px">${fmtDateTime(m.date)}</td>
+          <td><code style="background:#f1f5f9;padding:2px 7px;border-radius:5px;font-size:10px;font-family:'DM Mono',monospace">${m.transaction_no||'—'}</code></td>
+          <td><code style="background:#f1f5f9;padding:2px 7px;border-radius:5px;font-size:10px;font-family:'DM Mono',monospace">${m.product_code||'—'}</code></td>
+          <td style="font-weight:500;font-size:12px">${m.product_name||'—'}</td>
+          <td><strong style="font-family:'DM Mono',monospace">${m.quantity||0}</strong></td>
+          <td><span class="badge ${m.type==='IN'?'badge-in':'badge-out'}">${m.type==='IN'?'⬇️ IN':'⬆️ OUT'}</span></td>
+          <td style="font-size:11px;color:var(--ink3);max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.from_location||'—'}</td>
+          <td style="font-size:11px;color:var(--ink3);max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.to_location||'—'}</td>
+        </tr>
+      `).join('')
+      +'</tbody></table></div>';
+  }catch(e){cont.innerHTML='<div class="no-data"><span class="ico">⚠️</span><p>Error loading movements</p></div>';}
+}
+
+// search on enter key
+document.getElementById('mov-search').addEventListener('keydown',function(e){if(e.key==='Enter')renderMovements();});
+
+// ── RECEIPT / PDF UPLOAD ──────────────────────────────────────────────────────
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file&&file.type==='application/pdf') processPdf(file);
+  else toast('⚠️ Please drop a PDF file');
+}
+
+function handlePdfUpload(input){
+  const file=input.files[0];
+  if(file) processPdf(file);
+}
+
+async function processPdf(file){
+  const resultDiv=document.getElementById('receipt-result');
+  resultDiv.innerHTML='<div class="card"><div style="text-align:center;padding:2rem;color:var(--ink2)">⏳ Reading PDF with AI...</div></div>';
+  try{
+    // Convert PDF to base64
+    const base64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=()=>rej(new Error('Read failed'));
+      r.readAsDataURL(file);
+    });
+
+    // Call Claude API to parse PDF
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}},
+            {type:'text',text:`Extract data from this Odoo picking operations PDF. Return ONLY valid JSON, no markdown, no explanation.
+
+The warehouse location is "مستودع قرينا بريدة WBuraydah" or "W-Buraydah".
+- If FROM contains WBuraydah → type = "OUT" (LOAD)
+- If TO contains WBuraydah → type = "IN" (UNLOAD)
+
+Return this exact format:
+{
+  "transaction_no": "SM-10/INT/00005",
+  "date": "2025-07-03T01:19:49",
+  "type": "OUT",
+  "from_location": "مستودع قرينا بريدة W-Buraydah",
+  "to_location": "destination name",
+  "products": [
+    {"code": "10002", "name": "B.Rose (Yellow)", "name_ar": "بيبي جوري أصفر", "quantity": 70, "unit": "Piece"}
+  ]
+}`}
+          ]
+        }]
+      })
+    });
+    const data=await response.json();
+    const text=data.content.map(c=>c.text||'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    showParsedResult(parsed);
+  }catch(e){
+    resultDiv.innerHTML='<div class="card"><div style="color:var(--crit);text-align:center;padding:1rem">⚠️ Error parsing PDF: '+e.message+'</div></div>';
+  }
+}
+
+function showParsedResult(data){
+  const resultDiv=document.getElementById('receipt-result');
+  const typeBadge=data.type==='IN'
+    ?'<span class="badge badge-in">⬇️ IN (Unload)</span>'
+    :'<span class="badge badge-out">⬆️ OUT (Load)</span>';
+
+  resultDiv.innerHTML=`
+    <div class="card">
+      <h3>📋 Parsed Receipt</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1rem">
+        <div style="flex:1;min-width:140px"><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px">Transaction</div><code style="font-family:'DM Mono',monospace;font-weight:700;font-size:14px;color:var(--primary)">${data.transaction_no||'—'}</code></div>
+        <div style="flex:1;min-width:140px"><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px">Date</div><span style="font-weight:600">${fmtDateTime(data.date)}</span></div>
+        <div style="flex:1;min-width:100px"><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px">Type</div>${typeBadge}</div>
+      </div>
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:1rem">
+        From: <strong style="color:var(--ink2)">${data.from_location||'—'}</strong> → To: <strong style="color:var(--ink2)">${data.to_location||'—'}</strong>
+      </div>
+      <div class="tbl-wrap" style="margin-bottom:1rem">
+        <table class="tbl">
+          <thead><tr><th>Code</th><th>Product Name</th><th>Arabic</th><th>Qty</th><th>Unit</th></tr></thead>
+          <tbody>
+            ${(data.products||[]).map(p=>`
+              <tr>
+                <td><code style="background:#f1f5f9;padding:2px 7px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace">${p.code}</code></td>
+                <td style="font-weight:500">${p.name}</td>
+                <td style="direction:rtl;text-align:right;font-size:12px">${p.name_ar||'—'}</td>
+                <td><strong style="font-family:'DM Mono',monospace">${p.quantity}</strong></td>
+                <td style="color:var(--ink3);font-size:11px">${p.unit||'Piece'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-primary" onclick="confirmReceiptSave(${JSON.stringify(data).replace(/"/g,'&quot;')})">✅ Confirm & Save to Stock</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('receipt-result').innerHTML='';document.getElementById('pdf-input').value=''">❌ Cancel</button>
+      </div>
+    </div>
+  `;
+}
+
+async function confirmReceiptSave(data){
+  toast('⏳ Saving...');
+  const now=new Date().toISOString();
+  const txDate=data.date||now;
+  let saved=0;
+  for(const p of(data.products||[])){
+    // Save movement
+    await fetch(SB_URL+'/wh_movements',{
+      method:'POST',headers:{...SB_H,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        transaction_no:data.transaction_no,
+        date:txDate,
+        product_code:p.code,
+        product_name:p.name,
+        product_name_ar:p.name_ar||'',
+        quantity:p.quantity,
+        type:data.type,
+        from_location:data.from_location||'',
+        to_location:data.to_location||''
+      })
+    });
+    // Update stock
+    const prod=products.find(x=>x.code===p.code&&x.name===p.name);
+    if(prod){
+      const newQty=data.type==='IN'?(prod.quantity||0)+p.quantity:Math.max(0,(prod.quantity||0)-p.quantity);
+      const updateData={quantity:newQty,last_movement_date:txDate};
+      if(data.type==='IN'&&!prod.first_in_date) updateData.first_in_date=txDate;
+      await fetch(SB_URL+'/wh_products?id=eq.'+prod.id,{method:'PATCH',headers:SB_H,body:JSON.stringify(updateData)});
+      prod.quantity=newQty;
+      prod.last_movement_date=txDate;
+      if(data.type==='IN'&&!prod.first_in_date) prod.first_in_date=txDate;
+    } else {
+      // New product — add to DB
+      if(data.type==='IN'){
+        const res=await fetch(SB_URL+'/wh_products',{
+          method:'POST',headers:{...SB_H,'Prefer':'return=representation'},
+          body:JSON.stringify({code:p.code,name:p.name,name_ar:p.name_ar||'',quantity:p.quantity,unit:p.unit||'Piece',first_in_date:txDate,last_movement_date:txDate})
+        });
+        const rows=await res.json();
+        if(rows&&rows.length) products.push(rows[0]);
+      }
+    }
+    saved++;
+  }
+  // Refresh movements
+  const mRes=await fetch(SB_URL+'/wh_movements?order=date.desc&limit=1000',{headers:SB_H});
+  movements=await mRes.json();
+  products.sort((a,b)=>a.code.localeCompare(b.code)||a.name.localeCompare(b.name));
+  document.getElementById('receipt-result').innerHTML='<div class="card" style="border-color:var(--fresh);background:var(--fresh-bg)"><div style="text-align:center;padding:1rem;color:#065f46;font-weight:700;font-size:16px">✅ Saved '+saved+' products to stock!</div></div>';
+  document.getElementById('pdf-input').value='';
+  toast('✅ Stock updated successfully!');
+}
+
+// ── AGING PAGE ────────────────────────────────────────────────────────────────
+function renderAgingPage(){
+  const withDate=products.filter(p=>p.quantity>0);
+  const fresh=withDate.filter(p=>{const d=daysSince(p.first_in_date);return d!==null&&d<=4;}).length;
+  const warn=withDate.filter(p=>{const d=daysSince(p.first_in_date);return d!==null&&d>=5&&d<=7;}).length;
+  const crit=withDate.filter(p=>{const d=daysSince(p.first_in_date);return d!==null&&d>=8;}).length;
+  document.getElementById('aging-stats').innerHTML=
+    '<div class="stat-card"><div class="stat-num" style="color:var(--fresh)">'+fresh+'</div><div class="stat-lbl">🟢 Fresh</div></div>'+
+    '<div class="stat-card"><div class="stat-num" style="color:var(--warn)">'+warn+'</div><div class="stat-lbl">🟡 Warning</div></div>'+
+    '<div class="stat-card"><div class="stat-num" style="color:var(--crit)">'+crit+'</div><div class="stat-lbl">🔴 Critical</div></div>';
+
+  const sorted=[...products].filter(p=>p.quantity>0).sort((a,b)=>{
+    const da=daysSince(a.first_in_date)??-1;
+    const db=daysSince(b.first_in_date)??-1;
+    return db-da;
+  });
+
+  const tbody=document.getElementById('aging-tbody');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--ink3)">No stock data</td></tr>';return;}
+  tbody.innerHTML=sorted.map(p=>{
+    const days=daysSince(p.first_in_date);
+    const color=agingColor(days);
+    const pct=days===null?0:Math.min(100,Math.round(days/14*100));
+    return `<tr>
+      <td><code style="background:#f1f5f9;padding:2px 7px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace">${p.code}</code></td>
+      <td style="font-weight:500">${p.name}</td>
+      <td><strong style="font-family:'DM Mono',monospace">${p.quantity||0}</strong> <span style="font-size:10px;color:var(--ink3)">${p.unit||''}</span></td>
+      <td style="font-size:11px">${fmtDate(p.first_in_date)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;max-width:80px">
+            <div class="aging-bar"><div class="aging-fill" style="width:${pct}%;background:${color}"></div></div>
+          </div>
+          <span style="font-family:'DM Mono',monospace;font-weight:700;color:${color};font-size:13px">${days!==null?days+'d':'—'}</span>
+        </div>
+      </td>
+      <td>${agingBadge(days)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── EXCEL LIBRARY LOAD ───────────────────────────────────────────────────────
+const xlsxScript=document.createElement('script');
+xlsxScript.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+document.head.appendChild(xlsxScript);
+</script>
+</body>
+</html>
